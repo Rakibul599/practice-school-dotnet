@@ -25,7 +25,7 @@ export default function ClassListTab({
          data=await getClasses(searchTerm,true);
       }
      
-      setfilteredClasses(data);
+      setfilteredClasses(data.items);
     },300)
     return () => clearTimeout(timer);
   },[searchTerm])

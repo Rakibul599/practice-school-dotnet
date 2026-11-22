@@ -65,8 +65,9 @@ export default function App() {
     try {
       if (!isBackground) setClassesLoading(true);
       const data = await getClasses();
-      if (Array.isArray(data)) {
-        setClasses(data);
+      console.log(data);
+      if (Array.isArray(data?.items) ) {
+        setClasses(data.items);
         setLastUpdated(new Date());
       }
     } catch (err) {
