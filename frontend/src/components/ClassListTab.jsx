@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-
+import React, { useState,useEffect } from 'react';
+import {getClasses} from '../services/api';
 export default function ClassListTab({
   classes,
   loading,
@@ -9,10 +9,27 @@ export default function ClassListTab({
   lastUpdated
 }) {
   const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredClasses = (classes || []).filter((cls) =>
-    (cls.name || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [filteredClasses,setfilteredClasses]= useState([]);
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  // const filteredClasses = (classes || []).filter((cls) =>
+  //   (cls.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+  // );
+  useEffect(()=>{
+    const timer=setTimeout(async ()=>{
+       let data;
+      if(filteredClasses==="ALL")
+      {
+          data=await getClasses(searchTerm);
+      }
+      else{
+         data=await getClasses(searchTerm,true);
+      }
+     
+      setfilteredClasses(data);
+    },300)
+    return () => clearTimeout(timer);
+  },[searchTerm])
+  // const filteredClasses=
 
   const isValidStudentId = studentId && studentId.length === 17;
 
@@ -35,7 +52,8 @@ export default function ClassListTab({
           </div>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col sm:flex-row gap-3">
+          
           <input
             type="text"
             value={searchTerm}
@@ -43,6 +61,15 @@ export default function ClassListTab({
             placeholder="Filter by class name..."
             className="w-full sm:w-72 px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-hidden focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full sm:w-48 px-3 py-1.5 text-sm border border-gray-300 rounded bg-white text-gray-700 focus:outline-hidden focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
+          >
+            <option value="ALL">All Status</option>
+            <option value="AVAILABLE">Available Seats</option>
+            
+          </select>
         </div>
       </div>
 

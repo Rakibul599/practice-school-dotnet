@@ -30,12 +30,29 @@ public class ClassRepository : IClassRepository
         return await _context.SchoolClasses.AnyAsync(c => c.Name.ToLower() == name.Trim().ToLower());
     }
 
-    public async Task<List<SchoolClass>> GetAllClassesWithHoldsAsync()
+    public async Task<(List<SchoolClass>Items,int TotalCount)> GetAllClassesWithHoldsAsync(string? name, bool OnlyAvailable,int page, int pageSize)
     {
-        return await _context.SchoolClasses
-            .Include(c => c.Holds)
-            .OrderBy(c => c.CreatedAt)
-            .ToListAsync();
+        IQueryable<SchoolClass> query = _context.SchoolClasses.AsNoTracking().Include(c => c.Holds);
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            query = query.Where(c => EF.Functions.ILike(c.Name, $"%{name}%"));
+        }
+
+        if (OnlyAvailable)
+        {
+            query = query.Where(c => c.TotalSeats - c.Holds.Count(h => h.Status == "CONFIRMED" || (h.Status == "HELD" && h.ExpiresAt > DateTime.UtcNow)) > 0);
+        }
+        var totalCount=await query.CountAsync();
+        var items=await query.Skip((page-1)*pageSize).Take(pageSize).ToListAsync();
+
+        return (items,totalCount);
+        // return await query.ToListAsync();
+        // Previous code
+        // return await _context.SchoolClasses
+        //     .Include(c => c.Holds)
+        //     .OrderBy(c => c.CreatedAt)
+        //     .ToListAsync();
     }
 
     public async Task<SchoolClass?> GetClassWithHoldsByIdAsync(string id)

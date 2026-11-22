@@ -35,9 +35,9 @@ public class ClassesController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(List<ClassDetailResponseDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAllClasses()
+    public async Task<IActionResult> GetAllClasses([FromQuery] string? name,[FromQuery] bool OnlyAvailable=false,[FromQuery] int page=1,[FromQuery] int pageSize=2)
     {
-        var classes = await _classService.GetAllClassesAsync();
+        var classes = await _classService.GetAllClassesAsync(name,OnlyAvailable,page,pageSize);
         return Ok(classes);
     }
 

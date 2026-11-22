@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8081';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
 /**
  * Extract error message from API response
@@ -57,9 +57,19 @@ export const createClass = async ({ name, totalSeats }) => {
 };
 
 // 2. GET /classes - Fetch all classes with seat statistics
-export const getClasses = async () => {
+export const getClasses = async (name='',onlyAvailable=false) => {
+   const params=new URLSearchParams();
+
+   if(name.trim())
+   {
+    params.append('name',name.trim());
+   }
+   if (onlyAvailable) {
+      params.append('onlyAvailable', 'true');
+    }
+
   try {
-    const res = await fetch(`${API_BASE_URL}/classes`);
+    const res =params? await fetch(`${API_BASE_URL}/classes?${params}`) : fetch(`${API_BASE_URL}/classes`);
     if (!res.ok) {
       const err = await parseError(res, 'Failed to load class list.');
       throw new Error(err);

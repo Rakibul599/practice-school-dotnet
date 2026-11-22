@@ -42,12 +42,16 @@ public class ClassService : IClassService
             TotalSeats = createdClass.TotalSeats
         };
     }
-    public async Task<List<ClassDetailResponseDto>> GetAllClassesAsync()
+    public async Task<PagedResponse<ClassDetailResponseDto>> GetAllClassesAsync(string? name, bool OnlyAvailable,int page, int pageSize)
     {
-        var classes = await _classRepository.GetAllClassesWithHoldsAsync();
+        int maxPageSize=20;
+        page = page < 1 ? 1 : page;
+        pageSize = pageSize > maxPageSize ? maxPageSize : (pageSize < 1 ? 5 : pageSize);
+        var (classes, totalCount) = await _classRepository.GetAllClassesWithHoldsAsync(name,OnlyAvailable,page,pageSize);
         var now = DateTime.UtcNow;
-
-        return classes.Select(c => MapToDetailDto(c, now)).ToList();
+        var dtos=classes.Select(c => MapToDetailDto(c, now)).ToList();
+        return new PagedResponse<ClassDetailResponseDto>(dtos,totalCount,page, pageSize);
+        // return classes.Select(c => MapToDetailDto(c, now)).ToList();
     }
 
     public async Task<ClassDetailResponseDto?> GetClassByIdAsync(string classId)
